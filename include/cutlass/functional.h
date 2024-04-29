@@ -38,7 +38,7 @@
 #include "cutlass/cutlass.h"
 #include "cutlass/numeric_types.h"
 
-#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
 #if defined(CUTLASS_ARCH_WMMA_ENABLED)
 #include <mma.h>
@@ -57,14 +57,14 @@ template <typename T>
 struct absolute_value_op {
   CUTLASS_HOST_DEVICE
   T operator()(T lhs) const {
-    return abs(lhs);
+    return sycl::abs(lhs);
   }
 };
 
 template <>
 struct absolute_value_op<float> {
   CUTLASS_HOST_DEVICE
-  float operator()(float lhs) const { return fabs(lhs); }
+  float operator()(float lhs) const { return sycl::fabs(lhs); }
 };
 
 template <typename T>
@@ -107,7 +107,7 @@ struct scale {
     return result;
   }
 };
-
+#if __SYCL_ENABLE_HALF_2_MATH__
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
 /// Partial specializations needed when __CUDA_NO_HALF2_OPERATORS__ is set
 template<>
@@ -159,7 +159,7 @@ struct multiplies<__half> {
   }
 };
 #endif // defined(__CUDA_ARCH__)
-
+#endif
 
 /// Squares with optional conversion
 template <typename T, typename Output = T>
@@ -218,7 +218,7 @@ struct inverse_square_root<float> {
   CUTLASS_HOST_DEVICE
   float operator()(float const &lhs) const {
 #if defined(__CUDA_ARCH__)
-    return rsqrtf(lhs);
+    return sycl::rsqrt(lhs);
 #else
     return 1.f / std::sqrt(lhs);
 #endif
@@ -230,8 +230,7 @@ struct inverse_square_root<half_t> {
   CUTLASS_HOST_DEVICE
   half_t operator()(half_t const &lhs) const {
 #if defined(__CUDA_ARCH__)
-    auto result = hrsqrt(reinterpret_cast<__half const &>(lhs));
-    return reinterpret_cast<half_t const &>(result);
+    return half_t(sycl::rsqrt(static_cast<float>(lhs)));
 #else
     return half_t(1.f / std::sqrt(half_t::convert(lhs)));
 #endif
@@ -336,7 +335,7 @@ struct maximum<T, true> {
   CUTLASS_HOST_DEVICE
   T operator()(T const &lhs, T const &rhs) const {
 #if defined(__CUDA_ARCH__)
-    return lhs > rhs or isnan(lhs) ? lhs : rhs;
+    return lhs > rhs or sycl::isnan(lhs) ? lhs : rhs;
 #else
     return lhs > rhs or std::isnan(lhs) ? lhs : rhs;
 #endif
@@ -347,7 +346,7 @@ template <>
 struct maximum<float, false> {
   CUTLASS_HOST_DEVICE
   float operator()(float const &lhs, float const &rhs) const {
-    return fmaxf(lhs, rhs);
+    return lhs > rhs;
   }
 };
 
@@ -359,7 +358,7 @@ struct maximum<float, true> {
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 800)
     asm volatile("max.NaN.f32 %0, %1, %2;\n" : "=f"(res) : "f"(lhs), "f"(rhs));
 #elif defined(__CUDA_ARCH__)
-    res = lhs > rhs or isnan(lhs) ? lhs : rhs;
+    res = lhs > rhs or sycl::isnan(lhs) ? lhs : rhs;
 #else
     res = lhs > rhs or std::isnan(lhs) ? lhs : rhs;
 #endif
@@ -394,7 +393,7 @@ struct minimum<T, true> {
   CUTLASS_HOST_DEVICE
   T operator()(T const &lhs, T const &rhs) const {
 #if defined(__CUDA_ARCH__)
-    return lhs < rhs or isnan(lhs) ? lhs : rhs;
+    return lhs < rhs or sycl::isnan(lhs) ? lhs : rhs;
 #else
     return lhs < rhs or std::isnan(lhs) ? lhs : rhs;
 #endif
@@ -405,7 +404,7 @@ template <>
 struct minimum<float, false> {
   CUTLASS_HOST_DEVICE
   float operator()(float const &lhs, float const &rhs) const {
-    return fminf(lhs, rhs);
+    return lhs < rhs;
   }
 };
 
@@ -570,7 +569,7 @@ struct bit_xor {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 /// Atomic reductions
-
+#if __ENABLE_ATOMIC__
 template <typename T>
 struct atomic_add
 {
@@ -669,7 +668,7 @@ struct is_atomic<atomic_add<T>> : platform::true_type {};
 template <class T>
 struct is_atomic<atomic_maximum<T>> : platform::true_type {};
 
-
+#endif
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Partial specializations for nvcuda::wmma::fragment<Use, m, n, k, T, Layout>
@@ -712,3 +711,4 @@ struct plus<nvcuda::wmma::fragment<Use, m, n, k, T, Layout>>
 } // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+

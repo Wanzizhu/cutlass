@@ -261,9 +261,13 @@ print_relative_error(
 
   // Use either double or complex<double> for error computation
   using value_type = cute::remove_cvref_t<decltype(reference[0])>;
+#if   __SYCL_ENABLE_COMPLEX__
   using error_type = std::conditional_t<cute::is_complex<value_type>::value,
                                         cute::complex<double>,
                                         double>;
+#else 
+  using error_type = double;                                       
+#endif
 
   if (print_verbose) {
     std::cout << "Idx:\t"<< "Val\t" << "RefVal\t" << "RelError" << std::endl;

@@ -33,7 +33,7 @@
     \brief Defines a proxy class for storing Tensor Float 32 data type.
 */
 #pragma once
-
+#if __ENABLE_TF32__
 #if defined(__CUDACC_RTC__)
 #include "cutlass/floating_point_nvrtc.h"
 #else
@@ -475,3 +475,4 @@ cutlass::tfloat32_t operator "" _tf32(unsigned long long int x) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+#endif

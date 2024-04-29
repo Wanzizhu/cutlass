@@ -36,6 +36,7 @@
 
 #pragma once
 
+#if __SYCL_ENABLE_BFLOAT16__
 #if defined(__CUDACC_RTC__)
 #include "cutlass/floating_point_nvrtc.h"
 #else
@@ -45,7 +46,6 @@
 #include <cstring>
 #endif
 
-#include <cuda_bf16.h>
 #include "cutlass/cutlass.h"
 #include "cutlass/platform/platform.h"
 
@@ -499,7 +499,6 @@ bfloat16_t operator--(bfloat16_t & lhs, int) {
 } // namespace cutlass
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 //
 // User-defined literals
 //
@@ -514,4 +513,5 @@ cutlass::bfloat16_t operator "" _bf16(unsigned long long int x) {
   return cutlass::bfloat16_t(int(x));
 }
 
+#endif
 /////////////////////////////////////////////////////////////////////////////////////////////////

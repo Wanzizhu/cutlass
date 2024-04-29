@@ -90,7 +90,7 @@ static char const* cutlassGetStatusString(cutlass::Status status) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// TODO(zw): change this to sycl style
 static const int NumThreadsPerWarp = 32;
 static const int NumThreadsPerWarpGroup = 128;
 static const int NumWarpsPerWarpGroup = NumThreadsPerWarpGroup / NumThreadsPerWarp;
@@ -99,7 +99,7 @@ static const int NumThreadsPerQuad = 4;
 static const int NumThreadsPerQuadPair = NumThreadsPerQuad * 2;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#if 0
 /// Helper function to return true when called by thread 0 of threadblock 0.
 CUTLASS_HOST_DEVICE bool thread0() {
   #if defined(__CUDA_ARCH__)
@@ -151,7 +151,7 @@ int canonical_warp_group_idx() {
     return 0;
   #endif
 }
-
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }  // namespace cutlass

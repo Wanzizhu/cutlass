@@ -98,7 +98,7 @@
 //-----------------------------------------------------------------------------
 // Dependencies
 //-----------------------------------------------------------------------------
-
+#include <CL/sycl.hpp>
 #if defined(__CUDACC_RTC__)
 #include <cuda/std/type_traits>
 #include <cuda/std/utility>
@@ -123,7 +123,6 @@
 #include <type_traits>  // For integral constants, conditional metaprogramming, and type traits
 #endif
 
-#include <vector_types.h>
 #include <cutlass/cutlass.h>
 
 #endif
@@ -674,6 +673,18 @@ struct alignment_of : std::alignment_of<value_t> {};
 #endif
 
 /* 16B specializations where 32-bit Win32 host compiler disagrees with device compiler */
+using int4 = sycl::vec<int, 4>;
+using uint4 = sycl::vec<unsigned int, 4>;
+using float4 = sycl::vec<float, 4>;
+using long4 = sycl::vec<long, 4>;
+using ulong4 = sycl::vec<unsigned long, 4>;
+using longlong2 = sycl::vec<long long, 2>;
+using ulonglong2 = sycl::vec<unsigned long long, 2>;
+using double2 = sycl::vec<double, 2>;
+using longlong4 = sycl::vec<long long, 4>; 
+using ulonglong4 = sycl::vec<unsigned long long, 4>;
+using double4 = sycl::vec<double, 4>;
+  
 template <>
 struct alignment_of<int4> {
   enum { value = 16 };

@@ -34,7 +34,7 @@
 */
 
 #pragma once
-
+#include "sycl_macros.hpp"
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -116,25 +116,26 @@ namespace cutlass {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO(zw): fix this unroll 
 // CUTLASS_PRAGMA_(UNROLL|NO_UNROLL) optimization directives for the CUDA compiler.
-#if defined(__CUDA_ARCH__) && !defined(__INTELLISENSE__)
-  #if defined(__CUDACC_RTC__) || (defined(__clang__) && defined(__CUDA__))
+// #if defined(__CUDA_ARCH__) && !defined(__INTELLISENSE__)
+  // #if defined(__CUDACC_RTC__) || (defined(__clang__) && defined(__CUDA__))
     #define CUTLASS_PRAGMA_UNROLL _Pragma("unroll")
     #define CUTLASS_PRAGMA_NO_UNROLL _Pragma("unroll 1")
-  #else
-    #define CUTLASS_PRAGMA_UNROLL #pragma unroll
-    #define CUTLASS_PRAGMA_NO_UNROLL #pragma unroll 1
-  #endif
+  // #else
+  //   #define CUTLASS_PRAGMA_UNROLL #pragma unroll
+  //   #define CUTLASS_PRAGMA_NO_UNROLL #pragma unroll 1
+  // #endif
 
   #define CUTLASS_GEMM_LOOP CUTLASS_PRAGMA_NO_UNROLL
 
-#else
+// #else
 
-    #define CUTLASS_PRAGMA_UNROLL
-    #define CUTLASS_PRAGMA_NO_UNROLL
-    #define CUTLASS_GEMM_LOOP
+    // #define CUTLASS_PRAGMA_UNROLL
+    // #define CUTLASS_PRAGMA_NO_UNROLL
+    // #define CUTLASS_GEMM_LOOP
 
-#endif
+// #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

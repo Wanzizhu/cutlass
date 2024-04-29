@@ -31,8 +31,8 @@
 
 #pragma once
 
-#include <cuda_runtime.h>
-
+// #include <cuda_runtime.h>
+#if __SYCL_ENABLE_GPU_CLOCK__
 struct GPU_Clock
 {
   GPU_Clock() {
@@ -65,3 +65,4 @@ struct GPU_Clock
  private:
   cudaEvent_t start_, stop_;
 };
+#endif

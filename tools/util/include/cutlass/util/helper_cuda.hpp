@@ -30,8 +30,8 @@
  **************************************************************************************************/
 
 #pragma once
-
-#include <cuda.h>
+#if 0
+// #include <cuda.h>
 
 #include <cute/util/debug.hpp>
 
@@ -114,3 +114,4 @@ _ConvertSMVer2Cores(int major, int minor)
 }
 
 } // end namespace cute
+#endif

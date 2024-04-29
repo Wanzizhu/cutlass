@@ -30,8 +30,7 @@
  **************************************************************************************************/
 #pragma once
 
-#include <vector_types.h>
-
+#if 0
 #include <cute/config.hpp>
 
 #include <cute/util/type_traits.hpp>
@@ -185,3 +184,4 @@ struct tuple_element<I, uint3>
 };
 
 } // end namespace cute
+#endif

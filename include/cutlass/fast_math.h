@@ -273,7 +273,8 @@ void fast_divmod(int& quo, int& rem, int src, int div, unsigned int mul, unsigne
 
   #if defined(__CUDA_ARCH__)
   // Use IMUL.HI if div != 1, else simply copy the source.
-  quo = (div != 1) ? __umulhi(src, mul) >> shr : src;
+  // TODO(zw): nv use umulhi, no idea wheather it causes error
+  quo = (div != 1) ? sycl::mul_hi((unsigned int)src, mul) >> shr : src;
   #else
   quo = int((div != 1) ? int(((int64_t)src * mul) >> 32) >> shr : src);
   #endif
@@ -289,7 +290,8 @@ void fast_divmod(int& quo, int64_t& rem, int64_t src, int div, unsigned int mul,
 
   #if defined(__CUDA_ARCH__)
   // Use IMUL.HI if div != 1, else simply copy the source.
-  quo = (div != 1) ? __umulhi(src, mul) >> shr : src;
+  // TODO(zw): nv use umulhi, no idea wheather it causes error
+  quo = (div != 1) ? sycl::mul_hi((unsigned int)src, mul) >> shr : src;
   #else
   quo = int((div != 1) ? ((src * mul) >> 32) >> shr : src);
   #endif
@@ -329,7 +331,8 @@ struct FastDivmod {
 
 #if defined(__CUDA_ARCH__)
     // Use IMUL.HI if divisor != 1, else simply copy the source.
-    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right : dividend;
+    // TODO(zw): cuda use umihi, no idea wheather it causes error
+    quotient = (divisor != 1) ? sycl::mul_hi((unsigned int )dividend, multiplier) >> shift_right : dividend;
 #else
     quotient = int((divisor != 1) ? int(((int64_t)dividend * multiplier) >> 32) >> shift_right : dividend);
 #endif
@@ -344,7 +347,7 @@ struct FastDivmod {
 
 #if defined(__CUDA_ARCH__)
     // Use IMUL.HI if divisor != 1, else simply copy the source.
-    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right : dividend;
+    quotient = (divisor != 1) ? sycl::mul_hi((unsigned int)dividend, multiplier) >> shift_right : dividend;
 #else
     quotient = int((divisor != 1) ? ((dividend * multiplier) >> 32) >> shift_right : dividend);
 #endif
@@ -504,7 +507,7 @@ struct FastDivmodU64 {
     #ifdef __CUDA_ARCH__
       uint64_t x = dividend;
       if (multiplier) {
-        x = __umul64hi(dividend + round_up, multiplier);
+        x = sycl::mul_hi(dividend + round_up, multiplier);
       }
       quotient = (x >> shift_right);
     #else

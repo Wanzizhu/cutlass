@@ -1077,7 +1077,7 @@ struct inverse_square_root<Array<T, N>> {
     return result;
   }
 };
-
+#if __SYCL_ENABLE_HALF_2_MATH__
 template <int N>
 struct inverse_square_root<Array<half_t, N>> {
   CUTLASS_HOST_DEVICE
@@ -1113,7 +1113,7 @@ struct inverse_square_root<Array<half_t, N>> {
     return result;
   }
 };
-
+#endif
 /// Fused multiply-add-relu0
 template <typename T, int N>
 struct multiply_add_relu0<Array<T, N>, Array<T, N>, Array<T, N>> {
@@ -1185,7 +1185,7 @@ struct conjugate<Array<T, N> >  {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // functional.h numeric specializations targeting SIMD instructions in device code.
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
+#if __SYCL_ENABLE_HALF_2_MATH__
 template <int N>
 struct plus<Array<half_t, N>> {
   CUTLASS_HOST_DEVICE
@@ -2225,7 +2225,9 @@ struct maximum<Array<half_t, N>, false> {
     return result;
   }
 };
+#endif
 
+#if __SYCL_ENABLE_BFLOAT16__
 /// Fused multiply-add
 template <int N>
 struct multiply_add<Array<bfloat16_t, N>, Array<bfloat16_t, N>, Array<bfloat16_t, N>> {
@@ -2431,8 +2433,9 @@ struct multiply_add<Array<bfloat16_t, N>, Array<bfloat16_t, N>, Array<bfloat16_t
     return result;
   }
 };
+#endif
 
-
+#if __SYCL_ENABLE_UINT1__
 /// bit_and
 template <int N>
 struct bit_and<Array<uint1b_t, N>> {
@@ -2522,7 +2525,7 @@ struct bit_xor<Array<uint1b_t, N>> {
     return result;
   }
 };
-
+#endif
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Operator overloads
 /////////////////////////////////////////////////////////////////////////////////////////////////

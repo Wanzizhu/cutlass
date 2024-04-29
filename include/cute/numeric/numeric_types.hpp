@@ -30,7 +30,6 @@
  **************************************************************************************************/
 #pragma once
 
-#include <vector_types.h>
 #include <cutlass/numeric_types.h>
 #include <cutlass/numeric_size.h>
 
@@ -54,6 +53,7 @@ template <class T>
 static constexpr auto is_subbyte_v = is_subbyte<T>::value;
 
 using cutlass::half_t;
+#if __SYCL_ENABLE_BFLOAT16__
 using cutlass::bfloat16_t;
 
 using cutlass::tfloat32_t;
@@ -71,5 +71,5 @@ using cutlass::uint2b_t;
 using cutlass::int4b_t;
 using cutlass::uint4b_t;
 using cutlass::bin1_t;
-
+#endif
 } // end namespace cute

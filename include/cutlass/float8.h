@@ -33,8 +33,9 @@
     \brief Defines a class for using IEEE half-precision floating-point types in host or
       device code.
 */
-
+#if __ENABLE_FP8__
 #pragma once
+
 
 // FP8 types are available starting CUDA 11.8+
 #if (__CUDACC_VER_MAJOR__ >= 12) || ((__CUDACC_VER_MAJOR__ == 11) && (__CUDACC_VER_MINOR__ >= 8))
@@ -77,7 +78,7 @@
 #ifdef CUDA_FP8_ENABLED
 #include <cuda_fp8.h>
 #endif
-#include <cuda_fp16.h>
+
 
 #include "cutlass/cutlass.h"
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1267,3 +1268,4 @@ cutlass::float_e5m2_t operator "" _fe5m2(unsigned long long int x) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+#endif

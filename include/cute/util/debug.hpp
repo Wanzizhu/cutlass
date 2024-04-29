@@ -29,7 +29,7 @@
  *
  **************************************************************************************************/
 #pragma once
-
+#if __SYCL_ENABLE_DEBUG__
 /**
  * \file
  * \brief Debugging and logging functionality
@@ -162,3 +162,4 @@ block0()
 }
 
 }  // end namespace cute
+#endif

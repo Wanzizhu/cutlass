@@ -74,10 +74,13 @@ axpby(Alpha                    const& alpha,
       PrdTensor                const& p = {})
 {
   auto isBetaZero = [&] () {
+#if __SYCL_ENABLE_COMPLEX__ 
     if constexpr (is_complex<Beta>::value) {
       return beta.real() == Int<0>{} && beta.imag() == Int<0>{};
     }
     else {
+#endif    
+    {
       return beta == Int<0>{};
     }
 

@@ -29,7 +29,7 @@
  *
  **************************************************************************************************/
 #pragma once
-
+#if __SYCL_ENABLE_COMPLEX__
 #include <cutlass/complex.h>
 #include <cute/util/type_traits.hpp>
 #include <cute/numeric/numeric_types.hpp>
@@ -74,3 +74,4 @@ fma(complex<T> const& a,
 }
 
 } // end namespace cute
+#endif
