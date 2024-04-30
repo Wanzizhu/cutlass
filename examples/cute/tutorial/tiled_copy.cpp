@@ -166,7 +166,10 @@ int main(int argc, char **argv) {
   //
   // Allocate and initialize
   //
-  sycl::queue queue(sycl::gpu_selector_v);
+  sycl::queue queue(
+      sycl::gpu_selector_v,
+      sycl::property_list{sycl::property::queue::enable_profiling(),
+                          sycl::property::queue::in_order()});
   std::vector<Element> h_S(size(tensor_shape));
   std::vector<Element> h_D(size(tensor_shape));
 
@@ -246,7 +249,6 @@ int main(int argc, char **argv) {
   //
   // Verify
   //
-
   queue.memcpy(h_D.data(), d_D, h_D.size() * sizeof(Element)).wait();
 
   int32_t errors = 0;
@@ -265,6 +267,25 @@ int main(int argc, char **argv) {
   }
 
   std::cout << "Success." << std::endl;
+
+  // Timing iterations
+  const int timing_iterations = 100;
+  GPU_Clock timer;
+  timer.start();
+  for (int i = 0; i < timing_iterations; ++i) {
+    auto event = queue.submit([&](sycl::handler &cgh) {
+      cgh.parallel_for(sycl::nd_range<2>(gridDim * blockDim, blockDim),
+                       [=](sycl::nd_item<2> item) {
+                         copy_kernel_vectorized(tiled_tensor_S, tiled_tensor_D,
+                                                thr_layout, vec_layout, item);
+                       });
+    });
+    timer.add_gpu_event(event);
+  }
+  timer.end();
+  timer.print_profiling_data();
+  double cute_time = timer.milliseconds() / timing_iterations;
+  printf("CUTE_COPY:  (%6.6f)ms\n", cute_time);
 
   sycl::free(d_S, queue);
   sycl::free(d_D, queue);
