@@ -157,12 +157,18 @@ int main(int argc, char **argv) {
   using Element = float;
 
   // Define a tensor shape with dynamic extents (m, n)
-  constexpr int tensor_h = 256;
-  constexpr int tensor_w = 512;
-  constexpr int block_h = 128;
-  constexpr int block_w = 64;
+  constexpr int tensor_h = 8192;
+  constexpr int tensor_w = 8192;
+  constexpr int block_h = 256;
+  constexpr int block_w = 256;
   auto tensor_shape = make_shape(tensor_h, tensor_w);
   auto block_shape = make_shape(Int<block_h>{}, Int<block_w>{});
+
+  // Thread arrangement
+  Layout thr_layout = make_layout(make_shape(Int<32>{}, Int<32>{}));
+  // Vector dimensions
+  Layout vec_layout = make_layout(make_shape(Int<4>{}, Int<1>{}));
+
   //
   // Allocate and initialize
   //
@@ -218,12 +224,6 @@ int main(int argc, char **argv) {
   Tensor tiled_tensor_D =
       tiled_divide(tensor_D, block_shape); // ((M, N), m', n')
 
-  // Thread arrangement
-  Layout thr_layout = make_layout(make_shape(Int<32>{}, Int<8>{}));
-
-  // Vector dimensions
-  Layout vec_layout = make_layout(make_shape(Int<4>{}, Int<1>{}));
-
   //
   // Determine grid and block dimensions
   //
@@ -233,22 +233,18 @@ int main(int argc, char **argv) {
       size<2>(tiled_tensor_D)); // Grid shape corresponds to modes m' and n'
   sycl::range<2> blockDim(1, size(thr_layout));
 
-  //
-  // Launch the kernel
-  //
-  queue.submit([&](sycl::handler &cgh) {
-    cgh.parallel_for(sycl::nd_range<2>(gridDim * blockDim, blockDim),
-                     [=](sycl::nd_item<2> item) {
-                       copy_kernel_vectorized(tiled_tensor_S, tiled_tensor_D,
-                                              thr_layout, vec_layout, item);
-                     });
-  });
 
-  queue.wait();
+  auto kernel = [&](sycl::handler &cgh) {
+    cgh.parallel_for<class CopyKernel>(
+        sycl::nd_range<2>(gridDim * blockDim, blockDim),
+        [=](sycl::nd_item<2> item) {
+          copy_kernel_vectorized(tiled_tensor_S, tiled_tensor_D, thr_layout,
+                                 vec_layout, item);
+        });
+  };
 
-  //
-  // Verify
-  //
+  // launch kernel and verify results
+  queue.submit(kernel);
   queue.memcpy(h_D.data(), d_D, h_D.size() * sizeof(Element)).wait();
 
   int32_t errors = 0;
@@ -268,24 +264,21 @@ int main(int argc, char **argv) {
 
   std::cout << "Success." << std::endl;
 
-  // Timing iterations
+  // Testing kernel performance
   const int timing_iterations = 100;
   GPU_Clock timer;
   timer.start();
   for (int i = 0; i < timing_iterations; ++i) {
-    auto event = queue.submit([&](sycl::handler &cgh) {
-      cgh.parallel_for(sycl::nd_range<2>(gridDim * blockDim, blockDim),
-                       [=](sycl::nd_item<2> item) {
-                         copy_kernel_vectorized(tiled_tensor_S, tiled_tensor_D,
-                                                thr_layout, vec_layout, item);
-                       });
-    });
+    auto event = queue.submit(kernel);
     timer.add_gpu_event(event);
   }
   timer.end();
-  timer.print_profiling_data();
+
   double cute_time = timer.milliseconds() / timing_iterations;
-  printf("CUTE_COPY:  (%6.6f)ms\n", cute_time);
+  size_t io = tensor_h * tensor_w * sizeof(Element) * 2;
+  double bw = io / cute_time / 1e6;
+  printf("CUTE_COPY:  (%6.6f)ms, io size: (%3.3f)MB, bandwidth: (%3.3f)GB/s\n",
+         cute_time, io / 1e6, bw);
 
   sycl::free(d_S, queue);
   sycl::free(d_D, queue);

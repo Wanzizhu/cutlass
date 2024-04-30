@@ -71,7 +71,7 @@ public:
   }
 
   // print total time in milliseconds
-  float milliseconds() {
+  double milliseconds() {
     if (gpu_time_vec.size() == 0) {
       printf("No GPU events recorded, maybe not running GPU_Clock::end() "
              "before\n");
@@ -82,7 +82,7 @@ public:
     return time;
   }
 
-  float seconds() { return milliseconds() * float(1e-3); }
+  double seconds() { return milliseconds() * double(1e-3); }
 
   void print_profiling_data() {
 
