@@ -191,21 +191,21 @@ Clearly, CuTe does not use arrays to store shapes or strides and the above code 
 
 #### Example 1 -- Reshape a layout into a matrix
 
-`20:2  o  (5,4):(4,1)`.
+`20:2  o  (5,4):(4,1)`. Composition formulation.
 
 This describes interpreting the layout `20:2`
 as a 5x4 matrix in a row-major order.
 
-1. ` = 20:2 o (5:4,4:1)`. Concatenation of sublayouts.
+1. ` = 20:2 o (5:4,4:1)`. Layout `(5,4):(4,1)` as concatenation of sublayouts.
 
 2. ` = (20:2 o 5:4, 20:2 o 4:1)`. Left distributivity.
 
     * `20:2 o 5:4  =>  5:8`. Trivial case.
     * `20:2 o 4:1  =>  4:2`. Trivial case.
 
-3. ` = (5:8, 4:2)`.
+3. ` = (5:8, 4:2)`. Composed Layout as concatenation of sublayouts.
 
-4. ` = (5,4):(8,2)`. Concatenation of sublayouts.
+4. ` = (5,4):(8,2)`. Final composed layout.
 
 #### Example 2 -- Reshape a layout into a matrix
 
@@ -214,18 +214,18 @@ as a 5x4 matrix in a row-major order.
 This describes interpreting the layout `(10,2):(16,4)`
 as a 5x4 matrix in a column-major order.
 
-1. ` = (10,2):(16,4) o (5:1,4:5)`. Concatenation of sublayouts.
+1. ` = (10,2):(16,4) o (5:1,4:5)`. Layout `(5,4):(1,5)` as concatenation of sublayouts.
 
 2. ` = ((10,2):(16,4) o 5:1, (10,2):(16,4) o 4:5)`. Left distributivity.
 
     * `(10,2):(16,4) o 5:1 => (5,1):(16,4)`. Mod out the shape `5`.
     * `(10,2):(16,4) o 4:5 => (2,2):(80,4)`. Div out the stride `5`.
 
-3. ` = ((5,1):(16,4), (2,2):(80,4))`. Collect results.
+3. ` = ((5,1):(16,4), (2,2):(80,4))`. Composed Layout as concatenation of sublayouts.
 
 4. ` = (5:16, (2,2):(80,4))`. By-mode coalesce.
 
-5. ` = (5,(2,2))):(16,(80,4))`. Concatenation of sublayouts.
+5. ` = (5,(2,2))):(16,(80,4))`. Final composed layout.
 
 We get exactly this result with CuTe
 if we use compile-time shapes and strides.
@@ -390,12 +390,12 @@ The elements NOT pointed to by `B` sounds like a complement, `B*`, up to the siz
 
 ### Logical Divide 1-D Example
 
-Consider tiling the 1-D layout `A = (2,4,3):(4,1,8)` with the tiler `B = 4:2`. Informally, this means that we have a 1-D vector of 24 elements in some storage order defined by `A` and we want to extract tiles of 4 elements strided by 2.
+Consider tiling the 1-D layout `A = (4,2,3):(2,1,8)` with the tiler `B = 4:2`. Informally, this means that we have a 1-D vector of 24 elements in some storage order defined by `A` and we want to extract tiles of 4 elements strided by 2.
 
 This is computed in the three steps described in the implementation above.
 * Complement of `B = 4:2` under `size(A) = 24` is `B* = (2,3):(1,8)`.
 * Concantenation of `(B,B*) = (4,(2,3)):(2,(1,8))`.
-* Composition of `A = (2,4,3):(4,1,8)` with `(B,B*)` is then `((2,2),(2,3)):((4,1),(2,8))`.
+* Composition of `A = (4,2,3):(2,1,8)` with `(B,B*)` is then `((2,2),(2,3)):((4,1),(2,8))`.
 
 <p align="center">
   <img src="../../images/cute/divide1.png" alt="divide1.png" height="150"/>
@@ -415,7 +415,7 @@ Similar to the 2-D composition example above, consider a 2-D layout `A = (9,(4,8
 
 The above figure depicts `A` as a 2-D layout with the elements pointed to by `B` highlighted in gray. The layout `B` describes our "tile" of data, and there are twelve of those tiles in `A` shown by each of the colors. After the divide, the first mode of each mode of the result is the tile of data and the second mode of each mode iterates over each tile. In that sense, this operation can be viewed as a kind of `gather` operation or as simply a permutation on the rows and cols.
 
-Note that the first mode of each mode of the result is the sublayout `(3,(2,4)):(236,(13,52))` and is precisely the result we would have received if we had applied `composition` instead of `logical_divide`.
+Note that the first mode of each mode of the result is the sublayout `(3,(2,4)):(177,(13,2))` and is precisely the result we would have received if we had applied `composition` instead of `logical_divide`.
 
 ### Zipped, Tiled, Flat Divides
 
