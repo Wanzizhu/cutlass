@@ -49,8 +49,8 @@ struct UniversalFMA
   using BRegisters = B[1];
   using CRegisters = C[1];
 
-  CUTE_HOST_DEVICE static constexpr void
-  fma(D      & d,
+  CUTE_HOST_DEVICE constexpr void
+  operator()(D      & d,
       A const& a,
       B const& b,
       C const& c)

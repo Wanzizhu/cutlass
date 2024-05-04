@@ -93,43 +93,46 @@ CUTE_DEVICE
 uint32_t
 cast_smem_ptr_to_uint(void const* const ptr)
 {
+  // TODO(zw): any risk here?
+  return static_cast<uint32_t>(reinterpret_cast<std::uintptr_t>(ptr));
+
 // We prefer to use the new CVTA intrinsics if they are available, otherwise we will fall back to
 // the previous internal intrinsics if they are available.
-#if CUTE_CVTA_GENERIC_TO_SHARED_ACTIVATED
-  //
-  // This NVVM intrinsic converts an address in shared memory to a plain
-  // unsigned integer. This is necessary to pass to shared memory instructions
-  // in inline PTX.
-  //
-  // In CUDA 11 and beyond, this replaces __nvvm_get_smem_pointer()  [only available in 10.2].
-  //
-  //__device__ size_t __cvta_generic_to_shared(void* ptr);
+// #if CUTE_CVTA_GENERIC_TO_SHARED_ACTIVATED
+//   //
+//   // This NVVM intrinsic converts an address in shared memory to a plain
+//   // unsigned integer. This is necessary to pass to shared memory instructions
+//   // in inline PTX.
+//   //
+//   // In CUDA 11 and beyond, this replaces __nvvm_get_smem_pointer()  [only available in 10.2].
+//   //
+//   //__device__ size_t __cvta_generic_to_shared(void* ptr);
 
-  /// CUTE helper to get SMEM pointer
-  return static_cast<uint32_t>(__cvta_generic_to_shared(ptr));
+//   /// CUTE helper to get SMEM pointer
+//   return static_cast<uint32_t>(__cvta_generic_to_shared(ptr));
 
-#elif CUTE_NVVM_GET_SMEM_POINTER_ACTIVATED
+// #elif CUTE_NVVM_GET_SMEM_POINTER_ACTIVATED
 
-  return __nvvm_get_smem_pointer(ptr);
+//   return __nvvm_get_smem_pointer(ptr);
 
-#elif defined(__CUDA_ARCH__)
+// #elif defined(__CUDA_ARCH__)
 
-  uint32_t smem_ptr;
+//   uint32_t smem_ptr;
 
-  asm(
-  "{ .reg .u64 smem_ptr; cvta.to.shared.u64 smem_ptr, %1; cvt.u32.u64 %0, smem_ptr; }\n"
-    : "=r"(smem_ptr) : "l"(ptr));
+//   asm(
+//   "{ .reg .u64 smem_ptr; cvta.to.shared.u64 smem_ptr, %1; cvt.u32.u64 %0, smem_ptr; }\n"
+//     : "=r"(smem_ptr) : "l"(ptr));
 
-  return smem_ptr;
+//   return smem_ptr;
 
-#else
+// #else
 
 
-  (void) ptr;
-  printf("ERROR: cast_smem_ptr_to_uint not supported but used.\n");
-  return 0;
+//   (void) ptr;
+//   printf("ERROR: cast_smem_ptr_to_uint not supported but used.\n");
+//   return 0;
 
-#endif
+// #endif
 }
 
 namespace detail {

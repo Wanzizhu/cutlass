@@ -32,9 +32,9 @@
 #include <cutlass/detail/sycl_macros.hpp>
 
 
-#  define CUTE_HOST_DEVICE inline
-#  define CUTE_DEVICE      inline
-#  define CUTE_HOST        inline
+#  define CUTE_HOST_DEVICE __attribute__((always_inline))
+#  define CUTE_DEVICE      __attribute__((always_inline))
+#  define CUTE_HOST        __attribute__((always_inline))
 
 
 #  define CUTE_HOST_RTC CUTE_HOST

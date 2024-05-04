@@ -169,7 +169,7 @@ mma_unpack(MMA_Traits<MMA_Op, MMA_Args...> const& traits,
       CUTE_STATIC_ASSERT_V(size(rD) == Int<RegNumD>{});
       CUTE_STATIC_ASSERT_V(size(rC) == Int<RegNumC>{});
       if constexpr (detail::supports_output_scaling<MMATraits>::value) {
-        detail::explode(MMA_Op::fma,
+        detail::explode(MMA_Op{},
                         rD, make_int_sequence<RegNumD>{},
                         rA, make_int_sequence<RegNumA>{},
                         rB, make_int_sequence<RegNumB>{},
@@ -177,7 +177,7 @@ mma_unpack(MMA_Traits<MMA_Op, MMA_Args...> const& traits,
                         &(traits.accumulate_), seq<0>{});
       }
       else {
-        detail::explode(MMA_Op::fma,
+        detail::explode(MMA_Op{},
                         rD, make_int_sequence<RegNumD>{},
                         rA, make_int_sequence<RegNumA>{},
                         rB, make_int_sequence<RegNumB>{},

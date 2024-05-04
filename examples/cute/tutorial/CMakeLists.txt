@@ -30,7 +30,7 @@ foreach(src ${sources})
   add_executable(${exe} ${src})
   target_include_directories(${exe} PRIVATE ${INCLUD_DIR})
   target_compile_options(${exe} PRIVATE -g -fsycl -fsycl-targets=spir64_gen -ffast-math)
-  target_link_options(${exe} PRIVATE ${SYCL_LINK_OPTIONS})
+  target_link_options(${exe} PRIVATE -lblas ${SYCL_LINK_OPTIONS})
 endforeach()
 
 add_custom_target(clean-custom

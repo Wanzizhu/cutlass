@@ -760,6 +760,7 @@ print_latex_copy(LayoutS const& S, ThrIDS const& TS,  // (m,n) -> (tid,vid)  and
 // #include <cute/atom/copy_traits_sm75.hpp>
 // #include <cute/atom/copy_traits_sm80.hpp>
 // #include <cute/atom/copy_traits_sm90.hpp>
+#include <cute/atom/copy_traits_xe.hpp>
 
 // Config
 #if (__CUDACC_VER_MAJOR__ >= 12)
